@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wörter Zähler</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f8ff;
+            animation: fadeIn 2s ease-in-out;
+            overflow: hidden;
+            position: relative;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        h1 {
+            color: #4682b4;
+            text-align: center;
+            animation: slideInFromLeft 1s ease-out;
+        }
+        @keyframes slideInFromLeft {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        textarea {
+            width: calc(100% - 40px);
+            padding: 10px;
+            margin: 0 auto;
+            display: block;
+            border: 2px solid #4682b4;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            animation: fadeIn 2s ease-in-out;
+        }
+        textarea:focus {
+            border-color: #1e90ff;
+        }
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #4682b4;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        button:hover {
+            background-color: #1e90ff;
+            transform: scale(1.1);
+        }
+        button.loading {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            background: conic-gradient(#4682b4 10%, transparent 10%);
+            animation: spin 1s linear infinite;
+            position: relative;
+        }
+        button.loading::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        #output {
+            margin: 20px auto;
+            padding: 10px;
+            background-color: #d3f4ff;
+            border: 2px solid #4682b4;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.5s, transform 0.5s;
+            width: 80%;
+            max-width: 600px;
+        }
+        #output.show {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+        #madeWithLove {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: linear-gradient(90deg, #00a1e0, #00274e, #d42426); /* BMW M Farben */
+            background-size: 600% 100%;
+            color: white;
+            border-radius: 5px;
+            font-size: 18px;
+            animation: gradientBG 4s ease infinite;
+            display: flex;
+            align-items: center;
+        }
+        #madeWithLove::before {
+            content: '\2764'; /* Unicode für ein rotes Herz */
+            margin-right: 5px;
+            font-size: 24px;
+        }
+        @keyframes gradientBG {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        @keyframes fadeInMadeWithLove {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Wörter Zähler</h1>
+    <textarea id="textInput" rows="10" placeholder="Gib deinen Text hier ein..."></textarea>
+    <button id="countButton" onclick="startCount()">Wörter zählen</button>
+    <div id="output"></div>
+    <div id="madeWithLove">Made with <span>❤️</span> by Johannes Grof</div>
+
+    <script>
+        function startCount() {
+            let button = document.getElementById('countButton');
+            button.disabled = true;
+            button.classList.add('loading');
+            button.innerText = '';
+
+            setTimeout(() => {
+                woerterZaehlen();
+                button.disabled = false;
+                button.classList.remove('loading');
+                button.innerText = 'Wörter zählen';
+                // konfetti();
+            }, 3000);
+        }
+
+        function woerterZaehlen() {
+            let text = document.getElementById('textInput').value;
+            text = text.toLowerCase();
+            text = text.replace(/[.,!?;:]/g, '');
+
+            let woerter = text.split(/\s+/);
+            let anzahlWoerter = woerter.filter(wort => wort.length > 0).length;
+
+            let lesezeit = berechneLesezeit(anzahlWoerter);
+
+            let outputDiv = document.getElementById('output');
+            outputDiv.innerHTML = 'Anzahl der Wörter: ' + anzahlWoerter + '<br>Geschätzte Lesezeit: ' + lesezeit + ' Minuten';
+            outputDiv.classList.add('show');
+        }
+
+        function berechneLesezeit(anzahlWoerter) {
+            let wpm = 200; // Durchschnittliche Wörter pro Minute
+            let lesezeit = anzahlWoerter / wpm;
+            return Math.ceil(lesezeit); // Aufrunden auf die nächste volle Minute
+        }
+    </script>
+</body>
+</html>
