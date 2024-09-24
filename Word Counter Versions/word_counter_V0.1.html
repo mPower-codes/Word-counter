@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wörter Zähler</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f8ff;
+            animation: fadeIn 2s ease-in-out;
+            overflow: hidden;
+            position: relative;
+            transition: background-color 0.5s, color 0.5s;
+        }
+
+        /* Dark Mode Styling */
+        body.dark-mode {
+            background-color: #121212;
+            color: #ffffff;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        h1 {
+            color: #4682b4;
+            text-align: center;
+            animation: slideInFromLeft 1s ease-out;
+        }
+
+        /* Dark Mode für h1 */
+        body.dark-mode h1 {
+            color: #87ceeb;
+        }
+
+        @keyframes slideInFromLeft {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        textarea {
+            width: calc(100% - 40px);
+            padding: 10px;
+            margin: 0 auto;
+            display: block;
+            border: 2px solid #4682b4;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            animation: fadeIn 2s ease-in-out;
+        }
+
+        textarea:focus {
+            border-color: #1e90ff;
+        }
+
+        /* Dark Mode für textarea */
+        body.dark-mode textarea {
+            background-color: #2c2c2c;
+            color: #ffffff;
+            border-color: #87ceeb;
+        }
+
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #4682b4;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        button:hover {
+            background-color: #1e90ff;
+            transform: scale(1.1);
+        }
+
+        button.loading {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            background: conic-gradient(#4682b4 10%, transparent 10%);
+            animation: spin 1s linear infinite;
+            position: relative;
+        }
+
+        button.loading::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        #output {
+            margin: 20px auto;
+            padding: 10px;
+            background-color: #d3f4ff;
+            border: 2px solid #4682b4;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.5s, transform 0.5s;
+            width: 80%;
+            max-width: 600px;
+        }
+
+        #output.show {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+
+        /* Button für Dark/Light-Mode Umschaltung */
+        #modeButton {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px;
+            background-color: #4682b4;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #modeButton:hover {
+            background-color: #1e90ff;
+        }
+
+        body.dark-mode #modeButton {
+            background-color: #444;
+            color: #fff;
+        }
+
+        /* Technische Meldungen */
+        #techMessage {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #555;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        body.dark-mode #techMessage {
+            color: #ddd;
+        }
+
+        /* Credits Box Styling */
+        #creditsBox {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            padding: 10px;
+            background-color: #4682b4;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        #creditsBox:hover {
+            background-color: #1e90ff;
+            transform: scale(1.1);
+        }
+
+        body.dark-mode #creditsBox {
+            background-color: #444;
+            color: #fff;
+        }
+
+    </style>
+</head>
+<body>
+    <h1>Wörter Zähler</h1>
+    <textarea id="textInput" rows="10" placeholder="Gib deinen Text hier ein..."></textarea>
+    <button id="countButton" onclick="startCount()">Wörter zählen</button>
+    <div id="output"></div>
+
+    <!-- Technische Nachrichten -->
+    <div id="techMessage">Bereit...</div>
+
+    <!-- Dark/Light Mode Button -->
+    <button id="modeButton" onclick="toggleMode()">Dark Mode</button>
+
+    <!-- Credits Box -->
+    <div id="creditsBox" onclick="showCredits()">Credits</div>
+
+    <script>
+        let techMessages = ["Queuing in server...", "Validating data...", "Processing results..."];
+        let messageIndex = 0;
+        
+        function startCount() {
+            let button = document.getElementById('countButton');
+            let techMessageDiv = document.getElementById('techMessage');
+            
+            button.disabled = true;
+            button.classList.add('loading');
+            button.innerText = '';
+            
+            techMessageDiv.style.opacity = 1;
+            techMessageDiv.innerText = techMessages[messageIndex];
+            
+            // Beginne mit dem 6-Sekunden-Prozess und zeige nacheinander Nachrichten
+            let interval = setInterval(() => {
+                messageIndex = (messageIndex + 1) % techMessages.length;
+                techMessageDiv.innerText = techMessages[messageIndex];
+            }, 2000); // Nachrichten wechseln alle 2 Sekunden
+
+            setTimeout(() => {
+                clearInterval(interval);
+                woerterZaehlen();
+                button.disabled = false;
+                button.classList.remove('loading');
+                button.innerText = 'Wörter zählen';
+                techMessageDiv.style.opacity = 0;
+            }, 6000); // Nach 6 Sekunden ist der Prozess fertig
+        }
+
+        function woerterZaehlen() {
+            let text = document.getElementById('textInput').value;
+            text = text.toLowerCase();
+            text = text.replace(/[.,!?;:]/g, '');
+
+            let woerter = text.split(/\s+/);
+            let anzahlWoerter = woerter.filter(wort => wort.length > 0).length;
+
+            let lesezeit = berechneLesezeit(anzahlWoerter);
+
+            let outputDiv = document.getElementById('output');
+            outputDiv.innerHTML = 'Anzahl der Wörter: ' + anzahlWoerter + '<br>Geschätzte Lesezeit: ' + lesezeit + ' Minuten';
+            outputDiv.classList.add('show');
+        }
+
+        function berechneLesezeit(anzahlWoerter) {
+            let wpm = 200; // Durchschnittliche Wörter pro Minute
+            let lesezeit = anzahlWoerter / wpm;
+            return Math.ceil(lesezeit); // Aufrunden auf die nächste volle Minute
+        }
+
+        // Dark/Light Mode umschalten
+        function toggleMode() {
+            let body = document.body;
+            let modeButton = document.getElementById('modeButton');
+            
+            body.classList.toggle('dark-mode');
+
+            if (body.classList.contains('dark-mode')) {
+                modeButton.innerText = 'Light Mode';
+            } else {
+                modeButton.innerText = 'Dark Mode';
+            }
+        }
+
+        // Credits anzeigen
+        function showCredits() {
+            let creditsBox = document.getElementById('creditsBox');
+            if (creditsBox.innerText === 'Credits') {
+                creditsBox.innerText = 'Made by Johannes Grof';
+            } else {
+                creditsBox.innerText = 'Credits';
+            }
+        }
+    </script>
+</body>
+</html>
