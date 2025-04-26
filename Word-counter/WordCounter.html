@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wörter Zähler</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f8ff;
+            color: #000;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        body.black-gray {
+            background-color: #121212;
+            color: #d3d3d3;
+            animation: backgroundTransition 0.5s ease-in-out;
+        }
+
+        body.green {
+            background-color: #d4edda;
+            color: #155724;
+            animation: backgroundTransition 0.5s ease-in-out;
+        }
+
+        h1 {
+            color: #4682b4;
+            text-align: center;
+            animation: slideInFromLeft 1s ease-out;
+        }
+
+        body.black-gray h1 {
+            color: #a9a9a9;
+        }
+
+        body.green h1 {
+            color: #155724;
+        }
+
+        textarea {
+            width: calc(100% - 40px);
+            padding: 10px;
+            margin: 20px auto;
+            display: block;
+            border: 2px solid #4682b4;
+            border-radius: 5px;
+            font-size: 16px;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        textarea:focus {
+            border-color: #1e90ff;
+        }
+
+        body.black-gray textarea {
+            background-color: #2c2c2c;
+            color: #d3d3d3;
+            border-color: #444;
+        }
+
+        body.green textarea {
+            background-color: #f8f9f9;
+            color: #155724;
+            border-color: #28a745;
+        }
+
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #4682b4;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        button:hover {
+            background-color: #1e90ff;
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        #output {
+            margin: 20px auto;
+            padding: 10px;
+            background-color: #d3f4ff;
+            border: 2px solid #4682b4;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.5s, transform 0.5s;
+            width: 80%;
+            max-width: 600px;
+        }
+
+        #output.show {
+            opacity: 1;
+            transform: scale(1.05);
+            animation: fadeInScale 1s ease-in-out;
+        }
+
+        #colorButton {
+            position: fixed;
+            bottom: 20px;
+            right: 20px; /* <-- jetzt am alten Platz vom Dark Mode Button */
+            padding: 10px;
+            background-color: #4682b4;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+            animation: bounce 2s infinite;
+        }
+
+        #colorButton:hover {
+            background-color: #1e90ff;
+        }
+
+        body.black-gray #colorButton {
+            background-color: #444;
+            color: #fff;
+        }
+
+        body.green #colorButton {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes slideInFromLeft {
+            from {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes backgroundTransition {
+            from {
+                background-color: #f0f8ff;
+            }
+            to {
+                background-color: inherit;
+            }
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+    </style>
+</head>
+<body>
+<h1>Wörter Zähler</h1>
+<textarea id="textInput" rows="10" placeholder="Gib deinen Text hier ein..."></textarea>
+<button id="countButton" onclick="startCount()">Wörter zählen</button>
+<button id="removeSpacesButton" onclick="removeExtraSpaces()">Doppelte Leerzeichen entfernen</button>
+<div id="output"></div>
+<!-- Kein Dark Mode Button mehr -->
+<button id="colorButton" onclick="toggleColor()">UI-Farbe ändern</button>
+
+<script>
+    let colorModes = ["default", "black-gray", "green"];
+    let currentColorModeIndex = 0;
+
+    function startCount() {
+        let text = document.getElementById('textInput').value;
+        text = preprocessText(text);
+        let wordCount = countWords(text);
+        let readTime = calculateReadTime(wordCount);
+        displayResults(wordCount, readTime);
+    }
+
+    function preprocessText(text) {
+        text = text.toLowerCase();
+        text = text.replace(/[.,!?;:]/g, '');
+        return text.trim();
+    }
+
+    function countWords(text) {
+        let words = text.split(/\s+/);
+        return words.filter(word => word.length > 0).length;
+    }
+
+    function calculateReadTime(wordCount) {
+        let wpm = 200;
+        return Math.ceil(wordCount / wpm);
+    }
+
+    function displayResults(wordCount, readTime) {
+        let outputDiv = document.getElementById('output');
+        outputDiv.innerHTML = 'Anzahl der Wörter: ' + wordCount + '<br>Geschätzte Lesezeit: ' + readTime + ' Minuten';
+        outputDiv.classList.add('show');
+    }
+
+    function removeExtraSpaces() {
+        let textArea = document.getElementById('textInput');
+        let text = textArea.value;
+        text = text.replace(/\s+/g, ' ').trim();
+        textArea.value = text;
+        let outputDiv = document.getElementById('output');
+        outputDiv.innerHTML = 'Überflüssige Leerzeichen wurden entfernt!';
+        outputDiv.classList.add('show');
+    }
+
+    function toggleColor() {
+        let body = document.body;
+        currentColorModeIndex = (currentColorModeIndex + 1) % colorModes.length;
+        let newColorMode = colorModes[currentColorModeIndex];
+        body.className = newColorMode;
+    }
+</script>
+</body>
+</html>
